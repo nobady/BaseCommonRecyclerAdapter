@@ -1,7 +1,6 @@
 package com.library.adapter;
 
 import android.animation.Animator;
-import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
@@ -34,11 +33,9 @@ import java.util.List;
  */
 public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder> {
 
-    private static final int HEAD_VIEW = -200;
-    private static final int FOOT_VIEW = -201;
-    private static final int LOAD_MORE_VIEW = -202;
-
-    private Context mContext;
+    public static final int HEAD_VIEW = -200;
+    public static final int FOOT_VIEW = -201;
+    public static final int LOAD_MORE_VIEW = -202;
 
     private int layoutRes;
 
@@ -110,15 +107,20 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
         mLoadMoreListener = loadMoreListener;
     }
 
-    public BaseAdapter (Context context, int layoutRes) {
-        mContext = context;
+    /**
+     * 使用单布局时，用此构造方法
+     * @param layoutRes
+     */
+    public BaseAdapter (int layoutRes) {
         mData = new ArrayList<> ();
         this.layoutRes = layoutRes;
         loadMoreView = new DefaultLoadMoreView ();
     }
 
-    public BaseAdapter (Context context) {
-        mContext = context;
+    /**
+     * 使用多布局，用此构造方法
+     */
+    public BaseAdapter () {
         mData = new ArrayList<> ();
         loadMoreView = new DefaultLoadMoreView ();
         layoutArrays = new SparseIntArray ();
@@ -132,6 +134,11 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
         return isLoading;
     }
 
+    /**
+     * 多布局时，将type和布局对应起来
+     * @param type
+     * @param layoutRes
+     */
     protected void addItemType (int type, @LayoutRes int layoutRes) {
         layoutArrays.put (type, layoutRes);
     }
@@ -158,7 +165,7 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
 
     public void addHeadView (View headView, int index, int orientation) {
         if (headViewLayout == null) {
-            headViewLayout = new LinearLayout (mContext);
+            headViewLayout = new LinearLayout (headView.getContext ());
             headViewLayout.setOrientation (orientation);
             if (orientation == LinearLayout.VERTICAL) {
                 headViewLayout.setLayoutParams (
@@ -208,7 +215,7 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
 
     public void addFootView (View footView, int index, int orientation) {
         if (footViewLayout == null) {
-            footViewLayout = new LinearLayout (mContext);
+            footViewLayout = new LinearLayout (footView.getContext ());
             footViewLayout.setOrientation (orientation);
             if (orientation == LinearLayout.VERTICAL) {
                 footViewLayout.setLayoutParams (
@@ -360,7 +367,7 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
     /*获取加载更多的view，并且对加载失败时设置点击事件*/
     private BaseViewHolder getLoadMoreViewHolder (ViewGroup parent) {
         BaseViewHolder baseViewHolder = createBaseViewHolder (
-            LayoutInflater.from (mContext).inflate (loadMoreView.getLayoutId (), parent, false));
+            LayoutInflater.from (parent.getContext ()).inflate (loadMoreView.getLayoutId (), parent, false));
         baseViewHolder.itemView.setOnClickListener (new View.OnClickListener () {
             @Override public void onClick (View v) {
                 if (loadMoreView.getLoadMoreStatus () == LoadMoreView.STATUS_FAIL) {
@@ -387,7 +394,7 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
                     layout = layoutArrays.get (viewType);
                 }
                 return createBaseViewHolder (
-                    LayoutInflater.from (mContext).inflate (layout, parent, false));
+                    LayoutInflater.from (parent.getContext ()).inflate (layout, parent, false));
         }
     }
 
